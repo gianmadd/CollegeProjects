@@ -1,0 +1,209 @@
+
+READ ME - Sistema di Gestione per Corsi di Formazione
+
+
+
+
+SEQUENZE
+
+- sequenza_corso_id : Utilizzata per rendere sequenziale corso.corso_id 
+- sequenza_studente_id: Utilizzata per rendere sequenziale studente.studente_id
+- sequenza_professore_id: Utilizzata per rendere sequenziale professore.professore_id
+- sequenza_lezione_id: Utilizzata per rendere sequenziale lezione.lezione_id
+
+
+
+
+VISTE
+
+- presenze : Questa vista è una tabella di 4 colonne che contengono rispettivamente 
+	    corso_id, lezione_id, titolo_lezione, conteggio.
+	    La vista è utile quindi per avere accesso al numero di studenti presenti ad una specifica lezione
+	    di un corso.
+			 
+- insegnamenti: Questa vista è una tabella di 2 colonne che contengono rispettivamente 
+	           professore_id e corso_id.
+	           La vista è utile per avere un rapido accesso a tutti gli insegnamenti di un professore.
+				
+
+
+
+DATESTYLE
+
+- Il datestyle è stato modificato dal formato MM/dd/yyyy al formato dd/MM/yyyy
+
+
+
+
+FUNZIONI E PROCEDURE
+
+- calcolo_durata_lezione(inizio TIME, fine TIME) : Questa function prende in ingresso due dati di tipo TIME e restituisce un dato di tipo INTERVAL.
+					La funzione è utilizzata per calcolare la durata di una lezione a partire dalla
+					sua ora di inizio e la sua ora di fine.
+						   
+- calcolo_statistiche_min_presenze(nome_corso VARCHAR) : Questa function prende in ingresso il nome di un corso, e di questo calcola
+						   il minimo numero di presenze registrate fra le lezioni del suddetto corso.
+						   Tale funzione è stata utilizzata per ricavare statistiche circa le partecipazioni
+						   di un corso.
+														 
+- calcolo_statistiche_max_presenze(nome_corso VARCHAR) : Questa function prende in ingresso il nome di un corso, e di questo calcola
+						    il massimo numero di presenze registrate fra le lezioni del suddetto corso.
+						    Tale funzione è stata utilizzata per ricavare statistiche circa le partecipazioni
+						    di un corso.
+														 
+- calcolo_statistiche_media_presenze(nome_corso VARCHAR) : Questa function prende in ingresso il nome di un corso, e di questo calcola
+						        il numero medio di presenze registrate fra le lezioni del suddetto corso.
+						        Si è reso necessario calcolare esplicitamente la media non utilizzando la 
+						        funzione AVG in quanto era necessario effettuare il conteggui del numero di 
+						        lezioni sulla tabella lezione ,e non su presenze, in modo da includere
+						        anche le lezioni che non avevano registrato presenze.
+						        Tale funzione è stata utilizzata per ricavare statistiche circa le partecipazioni
+						        di un corso.
+  
+- calcolo_percentuale_riempimento_media(nome_corso VARCHAR) : Questa function prende in ingresso il nome di un corso, e di questo
+							calcola la percentuale media di riempimento fra le lezioni del suddetto corso.
+							Tale funzione utilizza la funzione calcolo_statistiche_media_presenze e 
+							restituisce un intero equivalente alla percentuale interessante.
+															  
+- calcolo_superamento corso : Questa funzione restituisce un trigger. 
+			  Il trigger in questione, nel momento in cui un corso viene terminato dall'operatore stabilisce quali
+			  sono gli studenti che hanno ottenuto il numero minimo di presenze necessarie al superamento del corso.
+		                  Il calcolo è determinato anche da corso.percentuale_minima_presenze.
+			  Dopo aver effettuato il calcolo per il corso appena aggiornato dall'operatore, il trigger aggiorna 
+			  iscrizione.superato da 'FALSE' a 'TRUE' in tutte le righe corrispondenti alle iscrizioni degli studenti
+			  idonei,.
+							  
+
+
+
+VINCOLI INTRARELAZIONALI : 
+
+- unicità_iscrizione_corso_studente : Questo vincolo permette al massimo un'iscrizione di uno studente ad uno specifico corso.
+
+- unicità_parola_lezione : Questo vincolo non permette di associare una specifica parola chiave ad una lezione più di una volta.
+  
+- unicità_corso_area_tematica : Questo vincolo non permette di associare una specifica area tematica ad un corso più di una volta.
+
+- unicità_partecipazione : Questo vincolo non permette di inserire una partecipazione di uno studente ad una specifica lezione più di una volta.
+						   
+- numero_partecipanti_maggiore_0 : Questo vincolo non permette di inserire un corso che non abbia partecipanti.
+
+- solo_orari_consentiti_on_insert : Questo vincolo è stato implementato tramite una funzione che restituisce un trigger.
+			         Il trigger in questione, al momento dell'inserimento di una lezione, controlla che essa
+			         non inizi prima delle 8:00 e che non finisca dopo le 20:00.
+			         Qualora dovesse verificarsi questa illegalità, il trigger elimina la lezione appena inserita.
+									
+- solo_orari_consentiti_on_update : Questo vincolo è stato implementato tramite una funzione che restituisce un trigger.
+			           Il trigger in questione, al momento della modifica di una lezione, controlla che la lezione non
+			           inizi prima delle 8:00 e non finisca dopo le 20:00.
+			           Qualora dovesse verificarsi questa illegalità, il trigger annulla la modifica effettuata.
+									
+- no_lezioni_più_di_2ore_on_insert : Questo vincolo è stato implementato tramite una funzione che restituisce un trigger.
+			             Il trigger in questione, al momento dell'inserimento di una lezione, controlla che essa non
+			             duri più di 2 ore.
+			             Qualora dovesse verificarsi questa illegalità, il trigger elimina la lezione appena inserita.
+									
+- no_lezioni_più_di_2ore_on_update : Questo vincolo è stato implementato tramite una funzione che restituisce un trigger.
+			               Il trigger in questione, al momento della modifica di una lezione, controlla che essa non duri 
+			               più di 2 ore.
+			               Qualora dovesse verificarsi questa illegalità, il trigger annulla la modifica effettuata.
+									 
+- no_orario_illegale_lezioni_on_insert : Questo vincolo è stato implementato tramite una funzione che restituisce un trigger.
+				 Il trigger in questione, al momento dell'inserimento di una lezione, controlla che il 
+				 suo orario di fine non sia precedente a quello di inizio.
+				 Qualora dovesse verificarsi questa illegalità, il trigger elimina la lezione appena inserita.
+										 
+- no_orario_illegale_lezioni_on_update : Questo vincolo è stato implementato tramite una funzione che restituisce un trigger.
+				   Il trigger in questione, al momento della modifica di una lezione, controlla che il suo
+				   orario di fine non sia precedente a quello di inizio.
+				   Qualora dovesse verificarsi questa illegalità, il trigger annulla la modifica effettuata.
+										 
+
+
+
+VINCOLI INTERRELAZIONALI
+
+- no_lezioni_corso_terminato : Questo vincolo è stato implementato tramite una funzione che restituisce un trigger.
+			   Il trigger in questione, al momento dell'inserimento di una lezione, controlla che il corso relativo
+			   alla lezione aggiunta non sia terminato.
+			   Qualora dovesse verificarsi questa illegalità, il trigger elimina la lezione appena inserita.
+							   
+- no_iscrizioni_corso_terminato : Questo vincolo è stato implementato tramite una funzione che restituisce un trigger.
+			      Il trigger in questione, al momento dell'iscrizione di uno studente ad un corso, controlla che tale
+			      corso non sia terminato.
+			      Qualora dovesse verificarsi questa illegalità, il trigger elimina l'iscrizione appena inserita.
+								  
+- no_partecipazioni_lezione_corso_terminato : Questo vincolo è stato implementato tramite una funzione che restituisce un trigger.
+				            Il trigger in questione, al momento della registrazione di una partecipazione da parte
+				            di uno studente ad una lezione, controlla che tale lezione non sia associata ad un corso 
+				            già terminato.
+				            Qualora dovesse verificarsi questa illegalità, il trigger elimina la partecipazione appena
+				            inserita.
+											  
+- no_partecipazioni_non_iscritti_corso : Questo vincolo è stato implementato tramite una funzione che restituisce un trigger.
+				 Il trigger in questione, al momento della registrazione di una partecipazione da parte di 
+				 uno studente ad un corso, controlla che tale lezione non sia associata ad un corso al quale
+				 lo studente non è ancora iscritto.
+				 Qualora dovesse verificarsi questa illegalità, il trigger elimina la partecipazione appena
+				 inserita.
+										 
+- no_iscrizioni_corso_pieno : Questo vincolo è stato implementato tramite una funzione che restituisce un trigger.
+			Il trigger in questione, al momento dell'iscrizione di uno studente ad un corso, controlla che tale corso
+			non abbia già raggiunto il numero massimo di iscritti, determinato da corso.max_partecipanti.
+			Qualora dovesse verificarsi questa illegalità, il trigger elimina l'iscrizione appena inserita.
+							  
+- no_lezioni_contemporanee_stesso_corso_on_insert : Questo vincolo è stato implementato tramite una funzione che restituisce un trigger.
+					          Il trigger in questione controlla che, al momento dell'inserimento di una lezione,
+					          all'interno dello stesso corso non sia già presente una lezione che si svolga in
+					          orario coincidente alla lezione appena inserita.
+					          Qualora dovesse verificarsi questa illegalità, il trigger elimina la lezione
+					          appena inserita.
+													
+- no_lezioni_contemporanee_stesso_corso_on_update : Questo vincolo è stato implementato tramite una funzione che restituisce un trigger.
+					            Il trigger in questione controlla che, al momento della modifica di una lezione, 
+					            all'interno dello stesso corso non sia già presente una lezione che si svolga in
+					            orario coincidente alla lezione appena inserita.
+					            Qualora dovesse verificarsi questa illegalità, il trigger annulla la modifica effettuata.
+													
+- no_partecipazioni_contemporanee : Questo vincolo è stato implementato tramite una funzione che restituisce un trigger.	
+			              Il trigger in questione, al momento della registrazione di una partecipazione di uno
+			              studente ad una lezione di un corso, controlla che non siano già presenti partecipazioni da 
+			              parte dello studente a lezioni (di altri corsi) che si svolgono in orario coincidente con la 
+			              lezione associata alla partecipazione appena inserita.
+			              Qualora dovesse verificarsi questa illegalità, il trigger elimina la partecipazione
+			              appena inserita.
+
+- no_decremento_num_max_partecipanti : Questo vincolo è stato implementato tramite una funzione che restituisce un trigger.
+				      Il trigger in questione, al momento della modifica di un corso, controlla che il 
+				      nuovo corso.max_partecipanti non sia minore del numero di iscrizioni già effettuate 
+				      al corso stesso.
+				      Qualora dovesse verificarsi questa illegalità, il trigger elimina la modifica effettuata.
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+			 
